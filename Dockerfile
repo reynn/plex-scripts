@@ -1,11 +1,13 @@
 FROM alpine:3.6
 
-COPY requirements.txt /app/requirements.txt
+WORKDIR /app
+
+COPY requirements.txt requirements.txt
 
 RUN apk add --update --no-cache \
         python3 \
-    && pip3 install -r /app/requirements.txt
+    && pip3 install -r requirements.txt
 
 COPY . /app
 
-ENTRYPOINT ["/usr/bin/python3", "/app/plex_data_collector.py"]
+ENTRYPOINT ["/usr/bin/python3", "plex_data_collector.py"]

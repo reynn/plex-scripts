@@ -1,3 +1,4 @@
+PyYAML==3.12
 certifi==2017.4.17
 chardet==3.0.4
 datadog==0.16.0
