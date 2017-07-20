@@ -102,3 +102,5 @@ ENV/
 
 # IntelliJ platform
 .idea
+
+config.yml
