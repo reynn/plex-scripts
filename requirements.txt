@@ -1,3 +1,4 @@
+PlexApi==2.0.2
 PyYAML==3.12
 certifi==2017.4.17
 chardet==3.0.4

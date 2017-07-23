@@ -3,7 +3,7 @@ import os
 
 
 class PlexConfig:
-    _default_yaml = {
+    _default_yml = {
         "general": {
             "interval": 10
         },
@@ -12,11 +12,12 @@ class PlexConfig:
         },
         "plex": {
             "servers": [],
-            "api_token": "",
+            "token": "",
             "username": "",
             "password": ""
         },
         "influxdb": {
+            "enabled": False,
             "server_address": "localhost",
             "port": 8086,
             "database": "",
@@ -24,6 +25,7 @@ class PlexConfig:
             "ignore_ssl_check": False
         },
         "datadog": {
+            "enabled": False,
             "app_token": "",
             "api_token": "",
             "prefix": "plex"
@@ -36,36 +38,46 @@ class PlexConfig:
             self.yml_file = yml
             self._parse_config(self._get_yaml())
         else:
-            self._parse_config(self._default_yaml)
+            self._parse_config(self._default_yml)
 
     def _get_yaml(self):
-        with open(self.yml_file, 'r') as yf:
-            return yaml.load(yf.read())
+        try:
+            with open(self.yml_file, 'r') as yf:
+                return yaml.load(yf.read())
+        except FileNotFoundError:
+            print("Unable to load config")
+            self._parse_config(self._default_yml)
 
     def _parse_config(self, yml_dict):
         # General Settings
-        self.general_interval = yml_dict.get('general').get('interval')
+        self.general_interval = os.getenv('GENERAL_INTERVAL', yml_dict.get('general').get('interval'))
 
         # Logging Settings
-        self.logging_enabled = yml_dict.get('logging').get('enabled')
+        self.logging_enabled = os.getenv('LOGGING_ENABLED', yml_dict.get('logging').get('enabled', False))
 
         # Datadog Settings
-        self.datadog_app_token = yml_dict.get('datadog').get('app_token')
-        self.datadog_api_token = yml_dict.get('datadog').get('api_token')
-        self.datadog_metric_prefix = yml_dict.get('datadog').get('prefix')
+        self.datadog_enabled = os.getenv('DATADOG_ENABLED', yml_dict.get('datadog').get('enabled', False))
+        self.datadog_app_token = os.getenv('DATADOG_APP_TOKEN', yml_dict.get('datadog').get('app_token'))
+        self.datadog_api_token = os.getenv('DATADOG_API_TOKEN', yml_dict.get('datadog').get('api_token'))
+        self.datadog_metric_prefix = os.getenv('DATADOG_METRIC_PREFIX', yml_dict.get('datadog').get('prefix'))
 
         # Plex Settings
-        self.plex_server_list = yml_dict.get('plex').get('servers')
-        self.plex_api_token = yml_dict.get('plex').get('api_token')
-        self.plex_username = yml_dict.get('plex').get('username')
-        self.plex_password = yml_dict.get('plex').get('password')
+        self.plex_server_list = os.getenv('PLEX_SERVERS', yml_dict.get('plex').get('servers'))
+        if self.plex_server_list is str:
+            self.plex_server_list = str(self.plex_server_list).split(',')
+        self.plex_token = os.getenv('PLEX_TOKEN', yml_dict.get('plex').get('token'))
+        self.plex_username = os.getenv('PLEX_USERNAME', yml_dict.get('plex').get('username'))
+        self.plex_password = os.getenv('PLEX_PASSWORD', yml_dict.get('plex').get('password'))
 
         # InfluxDB Settings
-        self.influxdb_server_address = yml_dict.get('influxdb').get('server_address')
-        self.influxdb_port = yml_dict.get('influxdb').get('port')
-        self.influxdb_database = yml_dict.get('influxdb').get('database')
-        self.influxdb_ssl = yml_dict.get('influxdb').get('ssl')
-        self.influxdb_ignore_ssl_check = yml_dict.get('influxdb').get('ignore_ssl_check')
+        self.influxdb_enabled = os.getenv('INFLUXDB_ENABLED', yml_dict.get('influxdb').get('enabled', False))
+        self.influxdb_server_address = os.getenv('INFLUXDB_SERVER_ADDRESS',
+                                                 yml_dict.get('influxdb').get('server_address'))
+        self.influxdb_port = os.getenv('INFLUXDB_PORT', yml_dict.get('influxdb').get('port'))
+        self.influxdb_database = os.getenv('INFLUXDB_DATABASE', yml_dict.get('influxdb').get('database'))
+        self.influxdb_ssl = os.getenv('INFLUXDB_SSL', yml_dict.get('influxdb').get('ssl'))
+        self.influxdb_ignore_ssl_check = os.getenv('INFLUXDB_IGNORE_SSL_CHECK',
+                                                   yml_dict.get('influxdb').get('ignore_ssl_check'))
 
     def generate_config(self):
         with open('config.yml', 'w') as f:

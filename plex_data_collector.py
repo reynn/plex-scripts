@@ -1,6 +1,28 @@
 import os
+from time import sleep
+
 from plex_config import PlexConfig
+from plex_retriever import PlexRetriever
+from publisher_datadog import DatadogPublisher
+from publisher_influxdb import InfluxDbPublisher
 from argparse import ArgumentParser
+
+
+def execute_work(yml_file_path):
+    config = PlexConfig(yml_file_path)
+    retriever = PlexRetriever(config)
+    while True:
+        streams = retriever.get_current_streams()
+        # libraries = retriever.get_library_data()
+        if config.datadog_enabled:
+            ddog = DatadogPublisher(config)
+            if streams:
+                ddog.send_stream_metrics(streams)
+            # if libraries:
+            #     ddog.send_library_metrics(libraries)
+        if config.influxdb_enabled:
+            infdb = InfluxDbPublisher(config)
+        sleep(config.general_interval)
 
 
 def entry_point():
@@ -18,7 +40,7 @@ def entry_point():
         print('Generating config file')
         PlexConfig().generate_config()
     else:
-        config = PlexConfig(args.yml_file)
+        execute_work(args.yml_file)
 
 if __name__ == '__main__':
     entry_point()

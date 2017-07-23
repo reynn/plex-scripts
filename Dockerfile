@@ -10,4 +10,4 @@ RUN apk add --update --no-cache \
 
 COPY . /app
 
-ENTRYPOINT ["/usr/bin/python3", "plex_data_collector.py"]
+ENTRYPOINT ["/usr/bin/env", "python3", "plex_data_collector.py"]
