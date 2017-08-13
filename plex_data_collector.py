@@ -12,14 +12,14 @@ def execute_work(yml_file_path):
     config = PlexConfig(yml_file_path)
     retriever = PlexRetriever(config)
     while True:
-        streams = retriever.get_current_streams()
-        # libraries = retriever.get_library_data()
+        # streams = retriever.get_current_streams()
+        libraries = retriever.get_library_data()
         if config.datadog_enabled:
             ddog = DatadogPublisher(config)
-            if streams:
-                ddog.send_stream_metrics(streams)
-            # if libraries:
-            #     ddog.send_library_metrics(libraries)
+            # if streams:
+            #     ddog.send_stream_metrics(streams)
+            if libraries:
+                ddog.send_library_metrics(libraries)
         if config.influxdb_enabled:
             infdb = InfluxDbPublisher(config)
         sleep(config.general_interval)

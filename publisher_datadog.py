@@ -1,5 +1,7 @@
 from datadog import initialize, api
+from plexapi.video import Show
 import time
+import re
 
 
 class DatadogMetric:
@@ -18,32 +20,40 @@ class DatadogPublisher:
         initialize(**options)
 
     def send_library_metrics(self, libraries):
+        metrics = []
         for host, libs in libraries.items():
-            metrics = dict()
             for lib_name, lib_items in libs.items():
-                n = str(lib_name).lower()
-                metrics[f"{self.metric_prefix}.library.{n}"] = len(lib_items)
-
-            print(metrics)
+                n = re.sub(r'[- ]', '_', str(lib_name).lower())
+                metrics.append({
+                    "host": host,
+                    "metric": f"{self.metric_prefix}.library.{n}",
+                    "points": len(lib_items)
+                })
+                if type(lib_items[0]) is Show:
+                    metrics.append({
+                        "host": host,
+                        "metric": f"{self.metric_prefix}.library.{n}.seasons",
+                        "points": sum([x.childCount for x in lib_items])
+                    })
+                    metrics.append({
+                        "host": host,
+                        "metric": f"{self.metric_prefix}.library.{n}.episodes",
+                        "points": sum([x.leafCount for x in lib_items])
+                    })
+        print("Library Metrics")
+        print(metrics)
+        api.Metric.send(metrics)
 
     def send_stream_metrics(self, streams):
         metrics = []
-        #     {
-        #         "host": host,
-        #         "metric": f"{self.metric_prefix}.streams",
-        #         "points": [time.time(), len(streams)],
-        #         "tags": []
-        #     }
-        #     for host, streams in dict(streams).items()
-        # ]
-        # api.Metric.send(metrics)
         for host, stream in dict(streams).items():
-            metrics = [
+            metrics.append([
                 {
                     "host": host,
                     "metric": f"{self.metric_prefix}.stream",
                     "points": len(stream),
                 }
-            ]
+            ])
+        print("Streaming Metrics")
         print(metrics)
         api.Metric.send(metrics)
