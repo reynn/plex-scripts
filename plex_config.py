@@ -81,5 +81,5 @@ class PlexConfig:
 
     def generate_config(self):
         with open('config.yml', 'w') as f:
-            f.write(yaml.dump(self._default_yaml, default_flow_style=False))
+            f.write(yaml.dump(self._default_yml, default_flow_style=False))
         print(f"Config file successfully created at {os.path.join(os.getcwd(), 'config.yml')}")
