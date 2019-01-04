@@ -4,7 +4,7 @@ datadog==0.24.0
 decorator==4.3.0
 idna==2.7
 PlexAPI==3.1.0
-PyYAML==3.13
+PyYaml>=4.2b1
 requests==2.20.1
 simplejson==3.16.0
 six==1.11.0
